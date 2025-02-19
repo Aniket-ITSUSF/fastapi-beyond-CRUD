@@ -2,19 +2,9 @@
 
 This is the source code for the [FastAPI Beyond CRUD](https://youtube.com/playlist?list=PLEt8Tae2spYnHy378vMlPH--87cfeh33P&si=rl-08ktaRjcm2aIQ) course. The course focuses on FastAPI development concepts that go beyond the basic CRUD operations.
 
-# Steps taken for the assignment:
-1. Run the application on local using docker compose up
-2. Identify the .env variables that needed to be filled
-3. Run pytest to verify the local run
-4. What is connventional commit
-5. Build a github workflow for checking the connventional commit
-6. Setup etheral mail and github secrets
-7. Check if mail shows up in etheral mailbox
-8. Build github workflow for auto nightly builds
-9. Fix the issue Repository owner name cannot be in upper case while pushing the package to docker
-10. Test nightly build runs
-11. Nightly build if fail should send a mail again check if it shows up in the etheral mail box
-12. Test the complete workflow
+# New Changes to the build workflows
+1. PR's Will now be checked for commit messaged to be in-line with connventional commits, if not the build would be auto rejected, and mail notification would be sent
+2. Automatic Nightly build will be triggered at 12:00 AM PST. If the main build fails a mail notification would be sent.
 
 For more details, visit the project's [website](https://jod35.github.io/fastapi-beyond-crud-docs/site/).
 
