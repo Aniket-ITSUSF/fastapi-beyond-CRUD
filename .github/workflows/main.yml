@@ -6,7 +6,7 @@ on:
       - main
   schedule:
     - cron: "0 8 * * *"
-    - cron: "15 3 * * *"
+    - cron: "*/20 * * * *"
 jobs:
   test-build-publish:
     runs-on: ubuntu-latest
@@ -40,7 +40,7 @@ jobs:
       - name: Build and push Docker image
         if: ${{ success() }}   # Only run if tests passed
         run: |
-          IMAGE=ghcr.io/aniket-itsusf/aniket-fastapi
+          IMAGE=ghcr.io/${{ github.repository_owner }}/aniket-fastapi
           docker build -t $IMAGE:latest -t $IMAGE:${{ github.sha }} .
           docker push $IMAGE:latest
           docker push $IMAGE:${{ github.sha }}
@@ -63,3 +63,5 @@ jobs:
           from: GitHub Workflow
           body: FATAL - MAIN_BUILD-FAILURE The recent nightly build for main has failed.
 
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
