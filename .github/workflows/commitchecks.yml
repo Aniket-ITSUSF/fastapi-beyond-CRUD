@@ -1,0 +1,37 @@
+name: Conventional Commits
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    environment: main
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Conventional Commits
+        uses: webiny/action-conventional-commits@v1.3.0
+      
+      - name: Send email notification
+        if: failure()
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: ${{ secrets.SMTP_SERVER_ADDR }}
+          server_port: ${{ secrets.SMTP_SERVER_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: Conventional Commits check failed
+          to: ${{ secrets.EMAIL_RECIPIENTS }}
+          from: GitHub Workflow
+          body: BUILD-FAILURE The Conventional Commits check has failed for PR ${{ github.event.pull_request.html_url }}
+      
+      - name: Close the PR If It Fails
+        if: failure()
+        uses: peter-evans/close-pull@v3
+        with:
+          pull-request-number: ${{ github.event.pull_request.number }}
+          comment: Auto Closed the PR, Conventional Commit Pattern not followed.
+          delete-branch: false
