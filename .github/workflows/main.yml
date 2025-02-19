@@ -25,16 +25,42 @@ jobs:
       - name: Build and run containers
         run: docker-compose up -d --build
 
-      - name: Manually install pytest
+      - name: Install pytest in container
         run: docker exec fastapi_container pip install pytest
 
       - name: Run tests inside the container
         run: docker exec fastapi_container pytest src/tests
 
       - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.PAT_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
+        if: ${{ success() }}   # Only run if tests passed
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/aniket-fastapi:latest .
-          docker push ghcr.io/${{ github.repository_owner }}/aniket-fastapi:latest
+          IMAGE=ghcr.io/${{ github.repository_owner }}/aniket-fastapi
+          docker build -t $IMAGE:latest -t $IMAGE:${{ github.sha }} .
+          docker push $IMAGE:latest
+          docker push $IMAGE:${{ github.sha }}
+  
+
+  notify-failure:
+    needs: [ test-build-publish ]
+    runs-on: ubuntu-latest
+    if: ${{ failure() }}
+    steps:
+      - name: Email Notif on failure
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: ${{ secrets.SMTP_SERVER_ADDR }}
+          server_port: ${{ secrets.SMTP_SERVER_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: Main Build Failed
+          to: ${{ secrets.EMAIL_RECIPIENTS }}
+          from: GitHub Workflow
+          body: FATAL - MAIN_BUILD-FAILURE The recent nightly build for main has failed.
+
