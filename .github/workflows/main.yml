@@ -6,7 +6,7 @@ on:
       - main
   schedule:
     - cron: "0 8 * * *"
-    - cron: "*/20 * * * *"
+
 jobs:
   test-build-publish:
     runs-on: ubuntu-latest
@@ -40,7 +40,8 @@ jobs:
       - name: Build and push Docker image
         if: ${{ success() }}
         run: |
-          IMAGE=ghcr.io/${{ github.repository_owner }}/aniket-fastapi
+          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE=ghcr.io/$REPO_OWNER/aniket-fastapi
           docker build -t $IMAGE:latest -t $IMAGE:${{ github.sha }} .
           docker push $IMAGE:latest
           docker push $IMAGE:${{ github.sha }}
