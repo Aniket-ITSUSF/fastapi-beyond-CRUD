@@ -1,0 +1,40 @@
+name: Nightly builds
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  test-build-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy .env.example to .env
+        run: cp .env.example .env
+
+      - name: Set up Docker Compose
+        run: sudo apt-get install docker-compose
+
+      - name: Build and run containers
+        run: docker-compose up -d --build
+
+      - name: Manually install pytest
+        run: docker exec fastapi_container pip install pytest
+
+      - name: Run tests inside the container
+        run: docker exec fastapi_container pytest src/tests
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.PAT_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/aniket-fastapi:latest .
+          docker push ghcr.io/${{ github.repository_owner }}/aniket-fastapi:latest
